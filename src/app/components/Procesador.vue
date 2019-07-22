@@ -1,140 +1,99 @@
 <template>
-  <div>
-    <b-table :fields="fields" :items="clientes" striped responsive="sm">
-      <template slot="show_details" slot-scope="row">
-        <b-button size="sm" @click="row.toggleDetails" class="mr-2">{{ row.detailsShowing ? 'Hide' : 'Show'}} Details</b-button>
-         <b-button size="sm" @click="deleteCliente(this.cliente._id)" class="mr-2">Delete</b-button>
-         <b-button size="sm" @click="editCliente(this.cliente._id)" class="mr-2">Edit</b-button>
-      </template>
+  <div class="example-drag">
+    <div class="upload">
+      <ul v-if="files.length">
+        <li v-for="(file, index) in files" :key="file.id">
+          <span>{{file.name}}</span> -
+          <span>{{file.size | formatSize}}</span> -
+          <span v-if="file.error">{{file.error}}</span>
+          <span v-else-if="file.success">success</span>
+          <span v-else-if="file.active">active</span>
+          <span v-else></span>
+        </li>
+      </ul>
+      <ul v-else>
+        <td colspan="7">
+          <div class="text-center p-5">
+            <h4>Drop files anywhere to upload<br/>or</h4>
+            <label for="file" class="btn btn-lg btn-primary">Select Files</label>
+          </div>
+        </td>
+      </ul>
 
-      <template slot="row-details" slot-scope="row">
-        <b-card>
+      <div v-show="$refs.upload && $refs.upload.dropActive" class="drop-active">
+    		<h3>Drop files to upload</h3>
+      </div>
 
-          <b-row class="mb-2">
-            <b-col sm="3" class="text-sm-right"><b>Cliente:</b></b-col>
-            <b-col>{{ row.item.cliente }}</b-col>
-          </b-row>
+      <div class="example-btn">
+        <file-upload
+          class="btn btn-primary"
+          post-action="/upload/post"
+          :multiple="true"
+          :drop="true"
+          :drop-directory="true"
+          v-model="files"
+          ref="upload">
+          <i class="fa fa-plus"></i>
+          Select files
+        </file-upload>
+        <button type="button" class="btn btn-success" v-if="!$refs.upload || !$refs.upload.active" @click.prevent="$refs.upload.active = true">
+          <i class="fa fa-arrow-up" aria-hidden="true"></i>
+          Start Upload
+        </button>
+        <button type="button" class="btn btn-danger"  v-else @click.prevent="$refs.upload.active = false">
+          <i class="fa fa-stop" aria-hidden="true"></i>
+          Stop Upload
+        </button>
+      </div>
+    </div>
 
-          <b-row class="mb-2">
-            <b-col sm="3" class="text-sm-right"><b>Edificio:</b></b-col>
-            <b-col>{{ row.item.edificio }}</b-col>
-          </b-row>
-          <b-row class="mb-2">
-            <b-col sm="3" class="text-sm-right"><b>Direccion:</b></b-col>
-            <b-col>{{ row.item.direccion }}</b-col>
-          </b-row>
-
-          <b-row class="mb-2">
-            <b-col sm="3" class="text-sm-right"><b>Lectura:</b></b-col>
-            <b-col>{{ row.item.lectura }}</b-col>
-          </b-row>
-
-           <b-row class="mb-2">
-            <b-col sm="3" class="text-sm-right"><b>Fecha Instalacion:</b></b-col>
-            <b-col>{{ row.item.fechainstalacion }}</b-col>
-          </b-row>
-
- </b-card>
-      </template>
-    </b-table>
+   
   </div>
 </template>
 
-
-
+<style>
+.example-drag label.btn {
+  margin-bottom: 0;
+  margin-right: 1rem;
+}
+.example-drag .drop-active {
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  position: fixed;
+  z-index: 9999;
+  opacity: .6;
+  text-align: center;
+  background: #000;
+}
+.example-drag .drop-active h3 {
+  margin: -.5em 0 0;
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  -webkit-transform: translateY(-50%);
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+  font-size: 40px;
+  color: #fff;
+  padding: 0;
+}
+</style>
 
 <script>
-class Cliente {
-  constructor(cliente = '', edificio = '',direccion='',lectura='',fechainstalacion='') {
-    this.cliente = cliente;
-    this.edificio = edificio;
-    this.direccion = direccion;
-    this.lectura = lectura;
-    this.fechainstalacion = fechainstalacion;
-  }
-}
+import FileUpload from 'vue-upload-component'
 export default {
-    name:'Procesador',
-      data() {
+  name: 'Procesador',
+  components: {
+    FileUpload,
+  },
+  data() {
     return {
-        fields: ['cliente', 'show_details'],
-      cliente: new Cliente(),
-      clientes: [],
-      edit: false,
-      clientToEdit: ''
+      
+      files: [],
     }
-  },
-  created() {
-    this.getClientes();
-  },
-  methods: {
-    sendCliente() {
-      if(this.edit === false) {
-        fetch('/api/clientes', {
-          method: 'POST',
-          body: JSON.stringify(this.cliente),
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          }
-        })
-          .then(res => res.json())
-          .then(data => {
-            this.getClientes();
-            this.cliente = new Cliente();
-          });
-      }
-      else {
-        fetch('/api/clientes/' + this.clienteToEdit, {
-          method: 'PUT',
-          body: JSON.stringify(this.cliente),
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          }
-        })
-          .then(res => res.json())
-          .then(data => {
-            this.getClientes();
-            this.cliente = new Cliente();
-            this.edit = !this.edit;
-          });
-      }
-    },
-    getClientes() {
-      fetch('/api/clientes')
-        .then(
-          res => res.json()
-          )
-        .then(data => {
-          this.clientes = data;
-        });
-    },
-    deleteCliente(ClienteId) {
-      fetch('/api/clientes/' + ClienteId, {
-        method: 'DELETE',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
-      })
-        .then(res => res.json())
-        .then(data => {
-          this.getClientes();
-        });
-    },
-    editCliente(Id) {
-      fetch('/api/clientes/' + Id)
-        .then(res => res.json())
-        .then(data => {
-          const { _id, cliente, edificio,direccion,lectura,fechaInstalacion} = data;
-          this.cliente = new Cliente(cliente, edificio,direccion,lectura,fechaInstalacion);
-          this.clienteToEdit = _id;
-          this.edit = true;
-        });
-    }   
   }
 }
-</script>
-
 </script>

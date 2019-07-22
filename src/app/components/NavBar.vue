@@ -1,10 +1,10 @@
 <template>
 <div>
     <b-navbar toogleable='md' type='dark' variant='dark'>
-
+<b-navbar-brand>Consumo</b-navbar-brand>
 <b-container>
       <b-navbar-toogle target='nav_collapse'>  </b-navbar-toogle>
-        <b-navbar-brand>Consumo</b-navbar-brand>
+        
     <b-collapse is-nav id='nav_collapse'>
             <b-navbar-nav>
         <b-nav-item :to="{name: 'Home'}" exact>Home</b-nav-item>

@@ -14,10 +14,12 @@
   "dependencies": {
     "bootstrap": "^4.3.1",
     "bootstrap-vue": "^2.0.0-rc.25",
+    "d3": "^5.9.7",
     "express": "^4.16.3",
     "mongoose": "^5.1.0",
     "morgan": "^1.9.0",
-    "vue-router": "^3.0.7"
+    "vue-router": "^3.0.7",
+    "vue-upload-component": "^2.8.20"
   },
   "devDependencies": {
     "babel-loader": "^7.1.4",
